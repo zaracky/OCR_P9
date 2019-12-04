@@ -3,6 +3,7 @@ import sys, os, os.path
 import smtplib
 import subprocess 
 from os import chdir, mkdir
+import datetime
 
 
 def menu():
@@ -29,47 +30,48 @@ def menu():
 
 
 def sauvegarde():
-	heure= os.popen("date +'%d-%m-%Y'")
-	heure2=heure.read()
-	if os.path.isfile('variable5.py'):
-		print("Le fichier variable.py est présent :) Début de la procédure...")
-#Si le fichier est présent on importe les variable
-		from variable import expediteur,mdp,localisation,ip,port,protocol
+	#heure= os.popen("date +'%d-%m-%Y'")
+	heure= datetime.datetime.now()	
+	heure2= heure.date()
+#heure2=heure.read()
+	print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
+	localisation="/home/administrateur/Bureau/sauvegarde"
+	#localisation= input("[exemple: /home/user/sauvegarde] >>")
+	print(" \n Entrer l'adresse Ip du serveur")
+	ip = input(" >>")	
+	print("Recapitlatif des informations: \n Repertoire de sauvegarde: ",localisation,"\n Ip du serveur:",ip,"\n Date:",heure2)
+	print(" \n Etes vous sur?(y/n)")
+	choice = input(" >>")
 
-#Sinon on indique un message d'erreur avec la possibilité de basculer sur la version non automatiser
+	if choice=="y":
+		print("Début de la sauvegarde")
+		if not os.path.exists(localisation):
+ 			os.makedirs(localisation)
+		os.chdir(localisation)
+		if not os.path.exists(str(heure2)):
+ 			os.makedirs(str(heure2))
+		os.chdir(str(heure2))
+		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
+		print("OK")
 	else:
-		print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
-		localisation= input("[exemple: /home/user/sauvegarde] >>")
-		print(" \n Entrer l'adresse Ip du serveur")
-		ip = input(" >>")	
-		print("Recapitlatif des informations: \n Repertoire de sauvegarde: ",localisation,"\n Ip du serveur:",ip,"\n Date:",heure2)
-		print(" \n Etes vous sur?(y/n)")
-		choice = input(" >>")
-
-		if choice=="y":
-			print("Début de la sauvegarde")
-			if not os.path.exists(localisation):
- 				os.makedirs(localisation)
-			os.chdir(localisation)
-			nom = heure2+".mysql"
-			os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
-			os.rename("sauv.sql",heure2+".sql")
-			print(heure2,".sql",nom)
-		else:
-			sauvegarde()
-		return
+		sauvegarde()
 	return
 
+
 def restauration() :
-	heure= os.popen("date +'%d-%m-%Y'")
-	heure2=heure.read()
+	heure= datetime.datetime.now()	
+	heure2= heure.date()
 	print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
 	localisation="/home/administrateur/Bureau/sauvegarde"	
 	#localisation= input("[exemple: /home/user/sauvegarde] >>")
-	if os.path.isfile(localisation+'/'+heure2+'.sql'):
+	if os.path.isfile(localisation+'/'+str(heure2)+'/sauv.sql'):
 		print("Le fichier variable.py est présent :) Début de la procédure...")
 	else:
 		print("\033[31m \n /_\ Erreur le fichier variable n'est pas présent!\n\033[0m")
+	print("Debut de la restauration")
+	os.chdir(localisation+'/'+str(heure2))
+	os.system('sudo mysql -u root   wordpress < sauv.sql')
+
 	return
 
 	#os.chdir(localisation)
