@@ -48,8 +48,9 @@ def sauvegarde():
 
 		if choice=="y":
 			print("Début de la sauvegarde")
-			#if not os.path.exists(localisation):
- 			#	os.makedirs(localisation)
+			if not os.path.exists(localisation):
+ 				os.makedirs(localisation)
+			os.chdir(localisation)
 			nom = heure2+".mysql"
 			os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
 			os.rename("sauv.sql",heure2+".sql")
@@ -60,17 +61,20 @@ def sauvegarde():
 	return
 
 def restauration() :
-#on stock dans une variable le mdp et le compte mail utilisé
-	localisation = "/home/administrateur/easy-rsa"
-	nom="goku"
-	expediteur = "loic.esparon.ocr@gmail.com"
-	mdp = subprocess.check_output(['cat', '/home/administrateur/mdp.txt'])
-#On demande le mail de l'utilisateur à qui est destiner les fichiers
-	print("Quel est le mail utilisateur?")
-#On l'integre ensuite à une variable
-	mail= input(" >>")
-#Demande de confirmation
-	print("Etes vous sur qu'il s'agit de cette adresse:",mail," ? (y/n)")
+	heure= os.popen("date +'%d-%m-%Y'")
+	heure2=heure.read()
+	print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
+	localisation="/home/administrateur/Bureau/sauvegarde"	
+	#localisation= input("[exemple: /home/user/sauvegarde] >>")
+	if os.path.isfile(localisation+'/'+heure2+'.sql'):
+		print("Le fichier variable.py est présent :) Début de la procédure...")
+	else:
+		print("\033[31m \n /_\ Erreur le fichier variable n'est pas présent!\n\033[0m")
+	return
+
+	#os.chdir(localisation)
+	
+
 
 
 
