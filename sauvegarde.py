@@ -37,9 +37,11 @@ def sauvegarde():
 	print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
 	localisation="/home/administrateur/Bureau/sauvegarde"
 	#localisation= input("[exemple: /home/user/sauvegarde] >>")
-	print(" \n Entrer l'adresse Ip du serveur")
-	ip = input(" >>")	
-	print("Recapitlatif des informations: \n Repertoire de sauvegarde: ",localisation,"\n Ip du serveur:",ip,"\n Date:",heure2)
+	print(" \n Entrer l'adresse Ip du serveur vers laquelle copier la sauvegarde: ")
+	ip = input(" >>")
+	print("\n--------------------------------------------------------------------")
+	print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",localisation,"\n Ip du serveur distant:",ip,"\n Date:",heure2)
+	print("--------------------------------------------------------------------")
 	print(" \n Etes vous sur?(y/n)")
 	choice = input(" >>")
 
@@ -52,7 +54,14 @@ def sauvegarde():
  			os.makedirs(str(heure2))
 		os.chdir(str(heure2))
 		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
-		print("OK")
+		print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
+		print("\n Copie vers le serveur distant en cours..")
+		os.chdir(localisation)
+		os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':/home/administrateur')
+		print("Copie réalisé")
+		print("\n Retour vers le menu principal")
+		input(" >>")
+		menu()
 	else:
 		sauvegarde()
 	return
@@ -66,11 +75,50 @@ def restauration() :
 	#localisation= input("[exemple: /home/user/sauvegarde] >>")
 	if os.path.isfile(localisation+'/'+str(heure2)+'/sauv.sql'):
 		print("Le fichier variable.py est présent :) Début de la procédure...")
+		print("Debut de la restauration")
+		os.chdir(localisation+'/'+str(heure2))
+		os.system('sudo mysql -u root   wordpress < sauv.sql')
+		print("Restauration terminée :) \n Retour au menu principal")
+		input(" >>")
+		menu()
+
+
 	else:
-		print("\033[31m \n /_\ Erreur le fichier variable n'est pas présent!\n\033[0m")
-	print("Debut de la restauration")
-	os.chdir(localisation+'/'+str(heure2))
-	os.system('sudo mysql -u root   wordpress < sauv.sql')
+		print("\033[31m \n /_\ Erreur le repertoire de sauvegarde n'est pas présent!\n\033[0m")
+		print("Voulez-vous le recuperer à partir d'un serveur distant?(y/n)")
+		choice = input(" >>")
+		if choice=="y":
+			print(" \n Entrer l'adresse Ip du serveur vers laquelle recuperer la sauvegarde: ")
+			ip = input(" >>")
+			print(" \n Entrer le repertoire ou se trouve la sauvegarde sur le serveur distant: ")
+			repertoire = input(" >>")
+
+			print("\n--------------------------------------------------------------------")
+			print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",repertoire,"\n Ip du serveur distant:",ip)
+			print("--------------------------------------------------------------------")
+			print(" \n Etes vous sur?(y/n)")
+			choice = input(" >>")
+			if choice=="y":
+				print(" \n Recuperation du fichier en cours..")
+				os.system('scp -r administrateur@'+ip+':/home/administrateur/'+str(heure2)+' ' +localisation)
+				print("\n Recuperation terminée. Debut de la restauration..")
+
+				os.chdir(localisation+'/'+str(heure2))
+				os.system('sudo mysql -u root   wordpress < sauv.sql')
+				print("Restauration terminée :) \n Retour au menu principal")
+				input(" >>")
+				menu()
+#sudo scp -r administrateur@192.168.1.1:/home/administrateur/2019-12-07 /home/administrateur/Bureau/sauvegarde/
+			else  :	
+				os.system('clear')
+				restauration()
+			
+
+		else:
+			print("Retour au menu principal")
+			input(" >>")
+			menu()
+
 
 	return
 
