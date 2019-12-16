@@ -42,6 +42,7 @@ def sauvegarde():
 	print("\n--------------------------------------------------------------------")
 	print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",localisation,"\n Ip du serveur distant:",ip,"\n Date:",heure2)
 	print("--------------------------------------------------------------------")
+	os.system('ssh administrateur@'+ip+' find /home/administrateur/test -type d -mtime +1 -exec echo {} \;')
 	print(" \n Etes vous sur?(y/n)")
 	choice = input(" >>")
 
@@ -54,11 +55,17 @@ def sauvegarde():
  			os.makedirs(str(heure2))
 		os.chdir(str(heure2))
 		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
+		os.system('sudo cp -r /var/www/html/www.example.com/wp-content '+localisation+'/'+str(heure2))
 		print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
 		print("\n Copie vers le serveur distant en cours..")
 		os.chdir(localisation)
 		os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':/home/administrateur')
-		print("Copie réalisé")
+		print("\n Copie réalisé")
+		print("\n Analyse de la presence de sauvegarde superieur à 30jours..")
+		os.system('ssh administrateur@'+ip+' find /home administrateur/test -type d -mtime +10 -exec rm -fr {} \;')
+#ssh login@Host 'find /home/exploit/ -size 0 -exec rm -i  {} \;'
+#find -type d -mtime +10
+
 		print("\n Retour vers le menu principal")
 		input(" >>")
 		menu()
@@ -70,13 +77,16 @@ def sauvegarde():
 def restauration() :
 	heure= datetime.datetime.now()	
 	heure2= heure.date()
-	print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
+	print(" \n Entrer le repertoire ou la sauvegarde a eu lieu:")
 	localisation="/home/administrateur/Bureau/sauvegarde"	
+	print(" \n A quel date voulez-vous restaurez le site?")
+	jour= input("[exemple: 2019-12-16 pour 16 decembre 2019 ] >>")	
 	#localisation= input("[exemple: /home/user/sauvegarde] >>")
-	if os.path.isfile(localisation+'/'+str(heure2)+'/sauv.sql'):
-		print("Le fichier variable.py est présent :) Début de la procédure...")
-		print("Debut de la restauration")
-		os.chdir(localisation+'/'+str(heure2))
+	print("\n Verification de la présence des fichiers en cours..\n")
+	if os.path.isfile(localisation+'/'+jour+'/sauv.sql') and os.path.isdir(localisation+'/'+jour+'/wp-content'):
+		print("Fichiers présents :) \n")
+		print("Debut de la restauration..\n")
+		os.chdir(localisation+'/'+jour)
 		os.system('sudo mysql -u root   wordpress < sauv.sql')
 		print("Restauration terminée :) \n Retour au menu principal")
 		input(" >>")
@@ -92,18 +102,20 @@ def restauration() :
 			ip = input(" >>")
 			print(" \n Entrer le repertoire ou se trouve la sauvegarde sur le serveur distant: ")
 			repertoire = input(" >>")
+			print(" \n A quel date souhaitez-vous restaurer le site? ")
+			date2 = input("[exemple: 2019-12-16 pour 16 decembre 2019 ] >>")	
 
 			print("\n--------------------------------------------------------------------")
-			print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",repertoire,"\n Ip du serveur distant:",ip)
+			print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",repertoire,"\n Ip du serveur distant:",ip,"\n Date de restauration:",date2)
 			print("--------------------------------------------------------------------")
 			print(" \n Etes vous sur?(y/n)")
 			choice = input(" >>")
 			if choice=="y":
 				print(" \n Recuperation du fichier en cours..")
-				os.system('scp -r administrateur@'+ip+':/home/administrateur/'+str(heure2)+' ' +localisation)
+				os.system('scp -r administrateur@'+ip+':/home/administrateur/'+date2+' ' +localisation)
 				print("\n Recuperation terminée. Debut de la restauration..")
 
-				os.chdir(localisation+'/'+str(heure2))
+				os.chdir(localisation+'/'+date2)
 				os.system('sudo mysql -u root   wordpress < sauv.sql')
 				print("Restauration terminée :) \n Retour au menu principal")
 				input(" >>")
