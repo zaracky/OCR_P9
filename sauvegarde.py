@@ -10,7 +10,7 @@ def menu():
 	os.system('clear')
 	print("--------------------------------------------------------------------")
 	print("Bienvenue à travers mon script de sauvegarde \n Voici les differentes options:")
-	print(" 1.Créer une sauvegarde du site Wordpress \n 2.Restaurer le site Wordpress à partir d'un fichier \n 3.Manuel d'instruction \n 4.Quitter")
+	print(" 1.Créer une sauvegarde du site Wordpress \n 2.Restaurer le site Wordpress à partir d'un fichier \n 3.Installation de Wordpress \n 4.Manuel d'instruction \n 5.Quitter")
 	print("-------------------------------------------------------------------")
 
 	print(" \n Votre choix:")
@@ -20,8 +20,10 @@ def menu():
 	elif choice=="2":
 		restauration()
 	elif choice=="3":
-		readme()
+		installation()
 	elif choice=="4":
+		readme()
+	elif choice=="5":
 		return
 	else:
 		menu()
@@ -42,12 +44,12 @@ def sauvegarde():
 	print("\n--------------------------------------------------------------------")
 	print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",localisation,"\n Ip du serveur distant:",ip,"\n Date:",heure2)
 	print("--------------------------------------------------------------------")
-	os.system('ssh administrateur@'+ip+' find /home/administrateur/test -type d -mtime +1 -exec echo {} \;')
+	#os.system('ssh administrateur@'+ip+' find /home/administrateur/test -type d -mtime +1 -exec echo {} \;')
 	print(" \n Etes vous sur?(y/n)")
 	choice = input(" >>")
 
 	if choice=="y":
-		print("Début de la sauvegarde")
+		print("Début de la sauvegarde...")
 		if not os.path.exists(localisation):
  			os.makedirs(localisation)
 		os.chdir(localisation)
@@ -55,12 +57,22 @@ def sauvegarde():
  			os.makedirs(str(heure2))
 		os.chdir(str(heure2))
 		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
-		os.system('sudo cp -r /var/www/html/www.example.com/wp-content '+localisation+'/'+str(heure2))
+		os.system('sudo cp -r /var/www/html/www.example.com '+localisation+'/'+str(heure2))
+		os.system('sudo cp /etc/apache2/sites-available/01-www.example.com.conf '+localisation+'/'+str(heure2))
+
+
 		print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
 		print("\n Copie vers le serveur distant en cours..")
 		os.chdir(localisation)
-		os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':/home/administrateur')
-		print("\n Copie réalisé")
+		os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':/home/administrateur ; echo valeur=$?>> erreur.py')
+		from erreur import valeur
+		if valeur != 0 :
+			print("\n Impossible de copier vers le serveur distant (voir ci dessus) ")
+			os.system('rm erreur.py ')	
+			input (" ")
+		else:
+			os.system('rm erreur.py ')
+			print("\n Copie réalisé")
 		print("\n Analyse de la presence de sauvegarde superieur à 30jours..")
 		os.system('ssh administrateur@'+ip+' find /home administrateur/test -type d -mtime +10 -exec rm -fr {} \;')
 #ssh login@Host 'find /home/exploit/ -size 0 -exec rm -i  {} \;'
@@ -72,6 +84,8 @@ def sauvegarde():
 	else:
 		sauvegarde()
 	return
+
+
 
 
 def restauration() :
@@ -88,6 +102,8 @@ def restauration() :
 		print("Debut de la restauration..\n")
 		os.chdir(localisation+'/'+jour)
 		os.system('sudo mysql -u root   wordpress < sauv.sql')
+		os.system('sudo cp 01-www.example.com.conf /etc/apache2/sites-available/ ')
+		os.system('sudo cp -r www.example.com /var/www/html/ ')
 		print("Restauration terminée :) \n Retour au menu principal")
 		input(" >>")
 		menu()
@@ -117,6 +133,8 @@ def restauration() :
 
 				os.chdir(localisation+'/'+date2)
 				os.system('sudo mysql -u root   wordpress < sauv.sql')
+				os.system('sudo cp 01-www.example.com.conf /etc/apache2/sites-available/ ')
+				os.system('sudo cp -r www.example.com /var/www/html/ ')
 				print("Restauration terminée :) \n Retour au menu principal")
 				input(" >>")
 				menu()
@@ -136,9 +154,80 @@ def restauration() :
 
 	#os.chdir(localisation)
 	
+########################################################################################
+
+
+def installation():
+	print("\n Début du téléchargement...")
+	os.system('sudo apt-get install mysql-server mysql-client ;echo valeur=$?>> erreur.py')
+	from erreur import valeur
+#Pour rappel si la valeur retournée est différente de 0 il y a eu une erreur
+	if valeur != 0 :
+#On informe donc l'utilisateur de l'erreur et l'indique a verifier la raison la plus fréquente de cette erreur à savoir le fait qu'il ne sois pas en ROOT
+		print("\n\n\n /!\ Impossible de telecharger mysql (voir ligne ci dessus) \nMerci de verifier votre connexion internet.")
+			#On efface le fichier et le repertoire créer
+		os.system('rm erreur.py ')	
+		print(" \n Voulez-vous continuer?(y/n)")
+		choice = input(" >>")
+		if choice=="y":
+			print("\n Reprise du processus...")
+		else:
+			menu()
+	else:
+#Sinon on affiche un message de la réussite de la commande
+		print("Telechargement de Mysql réussi\n")
+		os.system('rm erreur.py ')
+
+	os.system('sudo apt-get install apache2 php7.2 php7.2-mysql libapache2-mod-php7.2 ;echo valeur=$?>> erreur.py')
+	from erreur import valeur
+	if valeur != 0 :
+		print("\n\n\n /!\ Impossible de telecharger apache (voir ligne ci dessus) \nMerci de verifier votre connexion internet.")
+		os.system('rm erreur.py ')	
+		print(" \n Voulez-vous continuer?(y/n)")
+		choice = input(" >>")
+		if choice=="y":
+			print("\n Reprise du processus...")
+		else:
+			menu()
+		menu()
+	else:
+		print("Telechargement de Apache réussi\n")
+		os.system('rm erreur.py ')
+		os.system('sudo service apache2 restart ')
+
+	print(" \n Souhaitez-vous téléchargé Wordpress depuis son site officiel?(y/n)")
+	choice = input(" >>")
+	if choice=="y":
+		os.system('sudo wget http://wordpress.org/latest.zip ;echo valeur=$?>> erreur.py')
+		from erreur import valeur
+		if valeur != 0 :
+			print("\n\n\n /!\ Impossible de telecharger apache (voir ligne ci dessus) \nMerci de verifier votre connexion internet.")
+			os.system('rm erreur.py ')	
+			print(" \n Voulez-vous continuer?(y/n)")
+			choice = input(" >>")
+			if choice=="y":
+				print("\n Reprise du processus...")
+			else:
+				menu()
+	else:
+		os.system('sudo tar -zxvf latest.tar.gz')
+		os.system('sudo mv wordpress /var/www/html/')
+		os.system('sudo chown www-data.www-data /var/www/html/wordpress/* -R')
+		print("Telechargement de tout les logiciels réussi\n")
+		os.system('rm erreur.py ')
+		print("Retour au menu principal")
+		input(" >>")
+		menu()
+		
+	print("\nTelechargement de tout les logiciels réussi\n")
+	print("Retour au menu principal")
+	input(" >>")
+	menu()
+	return
 
 
 
+###################################################################################
 
 def readme():
 	print("""  -------------------------------------------------------------------------
