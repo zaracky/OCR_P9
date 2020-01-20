@@ -4,6 +4,7 @@ import smtplib
 import subprocess 
 from os import chdir, mkdir
 import datetime
+import mysql.connector
 
 
 def menu():
@@ -59,7 +60,6 @@ def sauvegarde():
 		os.chdir(str(heure2))
 		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
 		os.system('sudo cp -r /var/www/html/www.example.com '+localisation+'/'+str(heure2))
-		os.system('sudo cp /etc/apache2/sites-available/01-www.example.com.conf '+localisation+'/'+str(heure2))
 
 
 		print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
@@ -96,8 +96,7 @@ def restauration() :
 		print("Debut de la restauration..\n")
 		os.chdir(localisation+'/'+jour)
 		os.system('sudo mysql -u root   wordpress < sauv.sql')
-		os.system('sudo cp 01-www.example.com.conf /etc/apache2/sites-available/ ')
-		os.system('sudo cp -r www.example.com /var/www/html/ ')
+		os.system('sudo cp -r www.example.com/* /var/www/html/')
 		os.system('sudo service apache2 restart ')
 		print("Restauration terminée :) \n Retour au menu principal")
 		input(" >>")
@@ -128,10 +127,10 @@ def restauration() :
 
 				os.chdir(localisation+'/'+date2)
 				os.system('sudo mysql -u root   wordpress < sauv.sql')
-				os.system('sudo cp 01-www.example.com.conf /etc/apache2/sites-available/ ')
-				os.system('sudo cp -r www.example.com /var/www/html/ ')
+	
+				os.system('sudo cp -r www.example.com/* /var/www/html/ ')
 				os.system('sudo service apache2 restart ')
-				print("Restauration terminée :) \n Retour au menu principal")
+				print("\n Restauration terminée :) \n Retour au menu principal")
 				input(" >>")
 				menu()
 #sudo scp -r administrateur@192.168.1.1:/home/administrateur/2019-12-07 /home/administrateur/Bureau/sauvegarde/
@@ -201,8 +200,8 @@ def installation():
 			menu()
 		else:
 			os.system('sudo tar -zxvf latest.tar.gz')
-			os.system('sudo mv wordpress /var/www/html/')
-			os.system('sudo chown www-data.www-data /var/www/html/wordpress/* -R')
+			os.system('sudo cp -R wordpress/* /var/www/html/')
+			os.system('sudo chown 777 /var/www/html')
 		print("Telechargement de tout les logiciels réussi\n")
 		os.system('rm erreur.py ')
 		print("Retour au menu principal")
@@ -220,6 +219,15 @@ def installation():
 ###################################################################################
 
 def readme():
+	mydb = mysql.connector.connect(
+  	host="localhost",
+  	user="root",
+  	passwd=""
+)
+
+	mycursor = mydb.cursor()
+
+	mycursor.execute("CREATE DATABASE hola")
 	print("""  -------------------------------------------------------------------------
 |									  |
 |			MANUEL D'INSTRUCTION				  |
