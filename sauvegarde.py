@@ -69,20 +69,23 @@ def sauvegarde():
 #On crée un repertoire avec la date de la sauvegarde
  			os.makedirs(str(heure2))
 		os.chdir(str(heure2))
-#On sauvegarde la base de données et le fichier wordpress
+#On sauvegarde la base de données et le fichier wordpress et le crontab
 		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
 		os.system('sudo cp -r /var/www/html '+localisation+'/'+str(heure2))
+		os.system('crontab -u administrateur -l > crontab')
 
 #On indique l'emplacement de la sauvegarde
 		print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
 #On réalise ensuite une copie vers un serveur distant
 		print("\n Copie vers le serveur distant en cours..")
 		os.chdir(localisation)
-		os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':/home/administrateur')
-		print("\n Copie réalisé")
+		print(" \n Ou souhaiter vous copier la sauvegarde sur le serveur distant? ")
+		access = input(" >>")
+		os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':'+access)
+		print("\n Copie réalisée")
 #Verification des fichiers supérieur à 7jours
 		print("\n Analyse de la presence de sauvegarde superieur à 7jours..")
-		os.system('ssh administrateur@'+ip+' find /home administrateur/test -type d -mtime +7 -exec rm -fr {} \;')
+		os.system('ssh administrateur@'+ip+' find '+access+' -type d -mtime +7 -exec rm -fr {} \;')
 
 		print("\n Retour vers le menu principal")
 		input(" >>")
@@ -126,6 +129,7 @@ def sauvegarde_auto():
 		os.chdir(str(heure2))
 		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
 		os.system('sudo cp -r /var/www/html '+localisation+'/'+str(heure2))
+		os.system('crontab -u administrateur -l > crontab')
 
 
 		print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
