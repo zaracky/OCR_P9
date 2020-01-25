@@ -11,12 +11,12 @@ def menu():
 	os.system('clear')
 	print("--------------------------------------------------------------------")
 	print("Bienvenue à travers mon script de sauvegarde \n Voici les differentes options:")
-	print(" 1.Créer une sauvegarde du site Wordpress \n 2.Restaurer le site Wordpress à partir d'un fichier \n 3.Installation de Wordpress \n 4.Manuel d'instruction \n 5.Quitter")
+	print(" 1.Créer une sauvegarde du site Wordpress \n 2.Restaurer le site Wordpress à partir d'un fichier \n 3.Sauvegarde automatique \n 4.Manuel d'instruction \n 5.Quitter")
 	print("-------------------------------------------------------------------")
 
 	print(" \n Votre choix:")
 #Si un argument est entrée on le selectionne en tant que choix (par exemple pour automatiser l'exécution
-	if len( sys.argv ) > 0:
+	if len( sys.argv ) > 1:
 		choice = sys.argv[1]
 	else:
 #Sinon le choix est laissé à l'utilisateur
@@ -26,7 +26,7 @@ def menu():
 	elif choice=="2":
 		restauration()
 	elif choice=="3":
-		installation()
+		sauvegarde_auto()
 	elif choice=="4":
 		readme()
 	elif choice=="5":
@@ -36,6 +36,9 @@ def menu():
 
 	return
 
+
+
+
 ###################################################################################
 
 #Debut de la fonction de sauvegarde
@@ -43,19 +46,75 @@ def sauvegarde():
 	#On definit le jour dans une variable qui sera utilise plus tard dans la fonction
 	heure= datetime.datetime.now()	
 	heure2= heure.date()
+#On demande à l'utilisateur d'entrer les differents paramètres
+	print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
+	localisation= input("[exemple: /home/user/sauvegarde] >>")
+	print(" \n Entrer l'adresse Ip du serveur vers laquelle copier la sauvegarde: ")
+	ip = input(" >>")
 
-#heure2=heure.read()
+#On lui demande confirmation avant d'executer le script
+	print("\n--------------------------------------------------------------------")
+	print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",localisation,"\n Ip du serveur distant:",ip,"\n Date:",heure2)
+	print("--------------------------------------------------------------------")
+	print(" \n Etes vous sur?(y/n)")
+	choice = input(" >>")
+#Si oui on débute la sauvegarde
+	if choice=="y":
+		print("Début de la sauvegarde...")
+#On crée le repertoire destinataire si ce dernier n'est pas present
+		if not os.path.exists(localisation):
+ 			os.makedirs(localisation)
+		os.chdir(localisation)
+		if not os.path.exists(str(heure2)):
+#On crée un repertoire avec la date de la sauvegarde
+ 			os.makedirs(str(heure2))
+		os.chdir(str(heure2))
+#On sauvegarde la base de données et le fichier wordpress
+		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
+		os.system('sudo cp -r /var/www/html '+localisation+'/'+str(heure2))
+
+#On indique l'emplacement de la sauvegarde
+		print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
+#On réalise ensuite une copie vers un serveur distant
+		print("\n Copie vers le serveur distant en cours..")
+		os.chdir(localisation)
+		os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':/home/administrateur')
+		print("\n Copie réalisé")
+#Verification des fichiers supérieur à 7jours
+		print("\n Analyse de la presence de sauvegarde superieur à 7jours..")
+		os.system('ssh administrateur@'+ip+' find /home administrateur/test -type d -mtime +7 -exec rm -fr {} \;')
+
+		print("\n Retour vers le menu principal")
+		input(" >>")
+		menu()
+#Sinon retour à la fonction
+	else:
+		sauvegarde()
+	return
+
+
+####################################################################################
+
+
+
+#Debut de la fonction de sauvegarde créer pour l'automatisation
+def sauvegarde_auto():
+	#On definit le jour dans une variable qui sera utilise plus tard dans la fonction
+	heure= datetime.datetime.now()	
+	heure2= heure.date()
 	print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
 	localisation="/home/administrateur/Bureau/sauvegarde"
 	#localisation= input("[exemple: /home/user/sauvegarde] >>")
 	print(" \n Entrer l'adresse Ip du serveur vers laquelle copier la sauvegarde: ")
-	ip = input(" >>")
+	ip="192.168.1.1"
+	#ip = input(" >>")
 	print("\n--------------------------------------------------------------------")
 	print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",localisation,"\n Ip du serveur distant:",ip,"\n Date:",heure2)
 	print("--------------------------------------------------------------------")
 	#os.system('ssh administrateur@'+ip+' find /home/administrateur/test -type d -mtime +1 -exec echo {} \;')
 	print(" \n Etes vous sur?(y/n)")
-	choice = input(" >>")
+	choice = "y"
+	#choice = input(" >>")
 
 	if choice=="y":
 		print("Début de la sauvegarde...")
@@ -80,8 +139,8 @@ def sauvegarde():
 #find -type d -mtime +10
 
 		print("\n Retour vers le menu principal")
-		input(" >>")
-		menu()
+		#input(" >>")
+		exit()
 	else:
 		sauvegarde()
 	return
