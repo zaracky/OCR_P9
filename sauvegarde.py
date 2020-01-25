@@ -4,9 +4,9 @@ import smtplib
 import subprocess 
 from os import chdir, mkdir
 import datetime
-import mysql.connector
+import sys
 
-
+#Début de la fonction menu
 def menu():
 	os.system('clear')
 	print("--------------------------------------------------------------------")
@@ -15,7 +15,12 @@ def menu():
 	print("-------------------------------------------------------------------")
 
 	print(" \n Votre choix:")
-	choice = input(" >>")
+#Si un argument est entrée on le selectionne en tant que choix (par exemple pour automatiser l'exécution
+	if len( sys.argv ) > 0:
+		choice = sys.argv[1]
+	else:
+#Sinon le choix est laissé à l'utilisateur
+		choice = input(" >>")
 	if choice=="1":
 		sauvegarde()
 	elif choice=="2":
@@ -33,10 +38,12 @@ def menu():
 
 ###################################################################################
 
+#Debut de la fonction de sauvegarde
 def sauvegarde():
-	#heure= os.popen("date +'%d-%m-%Y'")
+	#On definit le jour dans une variable qui sera utilise plus tard dans la fonction
 	heure= datetime.datetime.now()	
 	heure2= heure.date()
+
 #heure2=heure.read()
 	print(" \n Entrer le repertoire ou la sauvegarde aura lieu:")
 	localisation="/home/administrateur/Bureau/sauvegarde"
@@ -59,7 +66,7 @@ def sauvegarde():
  			os.makedirs(str(heure2))
 		os.chdir(str(heure2))
 		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
-		os.system('sudo cp -r /var/www/html/www.example.com '+localisation+'/'+str(heure2))
+		os.system('sudo cp -r /var/www/html '+localisation+'/'+str(heure2))
 
 
 		print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
@@ -182,33 +189,11 @@ def installation():
 			print("\n Reprise du processus...")
 		else:
 			menu()
-		menu()
 	else:
 		print("Telechargement de Apache réussi\n")
 		os.system('rm erreur.py ')
 		os.system('sudo service apache2 restart ')
-
-	print(" \n Souhaitez-vous téléchargé Wordpress depuis son site officiel?(y/n)")
-	choice = input(" >>")
-	if choice=="y":
-		os.system('sudo wget http://wordpress.org/latest.tar.gz ;echo valeur=$?>> erreur.py')
-		from erreur import valeur
-		if valeur != 0 :
-			print("\n\n\n /!\ Impossible de telecharger apache (voir ligne ci dessus) \nMerci de verifier votre connexion internet.")
-			os.system('rm erreur.py ')	
-			input(" >>")
-			menu()
-		else:
-			os.system('sudo tar -zxvf latest.tar.gz')
-			os.system('sudo cp -R wordpress/* /var/www/html/')
-			os.system('sudo chown 777 /var/www/html')
 		print("Telechargement de tout les logiciels réussi\n")
-		os.system('rm erreur.py ')
-		print("Retour au menu principal")
-		input(" >>")
-		menu()
-	else:
-		print("\nTelechargement de tout les logiciels réussi\n")
 		print("Retour au menu principal")
 		input(" >>")
 		menu()
