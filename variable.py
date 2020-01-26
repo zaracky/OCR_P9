@@ -2,11 +2,12 @@
 #/!\ Ce fichier doit être sécuriser! Il est déconseiller de changer le nom des variables
 
 
-#On definit ici l'adresse qui sera utilisé pour expedier les mail
+#On definit ici l'adresse qui sera utilisé pour expedier et recevoir les mail
 expediteur= "mail expediteur"
 #Suivi du mot de passe
 mdp ="test"
 
+mail="mail destinataire"
 
 #On definit ensuite les variables necessaires à la création de la sauvegarde:
 
@@ -15,6 +16,5 @@ localisation="/home/administrateur/sauvegarde"
 
 #Et enfin les informations du serveur (ip + endroit ou l'on souhaite avoir la sauvegarde
 ip="192.168.1.1"
-choice="y"
 access="/home/administrateur"
 
