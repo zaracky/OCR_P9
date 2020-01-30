@@ -308,59 +308,56 @@ def readme():
 
 1. PRE-REQUIS
 
-/!\ Ce Script est à exécuter en tant que root sur un serveur OPENVPN sous GNU LINUX!
+/!\ Ce Script est à exécuter dans le même répertoire que le fichier variable.py dans le cas d'une exécution automatique!
 
-Pour le bien de son exécution, les fichiers nécessaires à la création des clés client (ca.key ,ca.crt et build.key) doivent être présents dans un dossier sous la forme suivante:
-Le dossier (qui contient build.key) et un sous dossier qui se nomme keys (contenant ca.key et ca.crt du serveur VPN)
+Le fichier variable.py est fourni au meme endroit que le script de sauvegarde. Il permet de configurer les variables les plus utilisées et les identifiants gmail
 
-Cette configuration est celle par défaut lors de l'installation de OPENVPN sur un serveur. Il ne devrait donc avoir aucune modification à réaliser.
+Ce manuel d'instruction est également disponible au sein du script avec le choix "4" dans le menu.
 
-Pour plus de sécurité, nous mettrons le mot de passe de la boite mail utilisé pour les envois dans un fichier texte (cf partie 4)
-
-Le chemin sera à indiquer au sein du script sous la variable :"mdp" (cf envoimail())
-
-Pour faciliter la configuration, le fichier vars devra être configuré au préalable avec les informations de l'entreprise
-
-Une connexion internet peut être requise pour l'envoi par mail.
+Une connexion internet est requise pour l'envoi par mail et le téléchargement des pré-requis
 
 --------------------------------------------------------------------------------
 
-2. SON FONCTIONNEMENT
+2. SON FONCTIONNEMENT(sauvegarde)
 
-Le script a pour fonction de créer automatiquement les fichiers de configurations nécessaires à la connexion des utilisateurs. 
-Pour ce faire, des informations seront demandées à l'utilisateur du script telles que : le nom du client, l'adresse IP du serveur, le port utilisé, et le protocole.
+Le script a pour fonction de sauvegarder et restaurer l'état d'un site wordpress. Pour ce faire, il va réaliser une copie du répertoire html, de la base de données et du crontab si il y en a un (le crontab est utilisé pour automatiser l'exécution du script).
 
-Une fois le fichier créer, il est possible de les envoyer par mail à un utilisateur avec en corps du mail une procédure détailler de l'utilisation et des actions à réaliser avec les fichiers envoyés.
-. Le mail est adapté en fonction de s’il s'agit d'un client Linux ou Windows.
+Ces fichiers vont être copiés dans un repertoire se nommant avec la date du jour de sauvegarde. L'emplacement de la sauvegarde est à definir via le script ou dans variable.py
 
-Ce manuel d'instruction est également disponible au sein du script avec le choix "2" dans le menu.
+Une fois créee, une copie sera réalisée sur un serveur distant. A nouveau le choix du serveur est à definir
 
-/!\ Attention à bien respecter les réponses attendues aux afin de ne pas avoir à répondre aux mêmes questions plusieurs fois d'affilée.
 
 ---------------------------------------------------------------------------------
 
-3. OPTIMISATION
+3. SON FONCTIONNEMENT(sauvegarde_auto)
 
-Dans le cadre d'une utilisation fréquente au sein d'un même environnement, le script prévoit des variables préenregistrées.
+Une seconde fonction existe dans le cas d'une exécution automatique (choix "3").
 
-Ils sont disponibles sous forme de commentaires et se distinguent de manière suivante : «/*Le commentaire »
+Comme dit précédemment ce dernier doit être exécuté en précense du fichier variable.py!!
 
-Ces variables permettent de configurer les champs les plus utilisés afin de ne pas avoir a les entrées à chaque exécution.
-Exemple : l'IP du serveur, le port, le protocole...
+Il va notamment importer les variables qui s'y trouvent. Il est donc important de bien verifier les informations et de réaliser un test de fonctionnement avant de l'automatiser via crontab ou autres..
 
-Bien entendu si on utilise ces variables il faudra veiller à commenter les lignes demandant l'interaction avec l'utilisateur afin de ne pas avoir de conflit.
+Dans le cas ou le fichier n'est pas présent, un mail est envoyé à l'utilisateur/administrateur pour l'avertir que la sauvegarde a potentiellement pas eu lieu.
+
+Le processus de sauvegarde est le même que pour la version manuelle
 
 --------------------------------------------------------------------------------
 
-4. MAIL
+4. SON FONCTIONNEMENT(restauration)
 
-L'adresse mail expéditeur est à définir dans la fonction envoimail() au sein de la variable "expéditeur"
+Concernant la restauration, le script va demander l'emplacement du repertoire contenant les fichiers necessaires à la restauration mais également la date de sauvegarde souhaitée. Dans un second temps il va verifier la présence des fichiers puis copier/restaurer les fichiers.
 
-Comme mentionner précédemment, le mot de passe de ce dernier sera mis au sein d'un fichier texte ou la localisation sera stocker dans la variable "mdp"
+Si le dossier n'est pas présent en local, une option permet de le telecharger depuis un serveur distant
 
-Un corps de mail avec une procédure générique a été mis en place. Ce dernier sera à adapter en fonction du contexte.
+Pour plus dinformations, voici le fonctionnement de la restauration: -Copie du repertoire html vers /var/www/html (cela permet de ne pas reconfigurer apache par defaut) -Création de la base de données et de l'utilisateur Wordpress (le mot de passe -Restauration de la base Wordpress (via le fichier .mysql) -Restauration du crontab -Redemarrage de apache -Enjoy :)
 
-Les fichiers seront envoyés en pièce jointe sous la forme d'une archive .zip
+5. MAIL
+
+Cette fonction n'est utilisée que lors de la sauvegarde automatique!
+
+L'adresse mail expéditrice/destinataire est à importer via le fichier variable.py
+
+Idem pour le mot de passe.
 
 """)
 
