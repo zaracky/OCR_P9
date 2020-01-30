@@ -169,29 +169,28 @@ def restauration() :
 	os.system('sudo apt-get install mysql-server mysql-client')
 	os.system('sudo apt-get install apache2 php7.2 php7.2-mysql libapache2-mod-php7.2')
 	os.system('sudo service apache2 start ')
-#On averti l'utilisateur du résultat
+#On avertit l'utilisateur du résultat
 	print("\n Telechargement de tout les pré-requis réussis\n")
 
-#Pour procéder à la restauration de nombreux informations sont utiles:
+#Pour procéder à la restauration de nombreuses informations sont utiles:
 	print(" \n Entrer le repertoire ou la sauvegarde a eu lieu:")
-	#localisation= input("[exemple: /home/user/sauvegarde] >>")
-	localisation="/home/administrateur/Bureau/sauvegarde"	
+	localisation= input("[exemple: /home/user/sauvegarde] >>")
 	print(" \n A quel date voulez-vous restaurez le site?")
 	jour= input("[exemple: 2019-12-16 pour 16 decembre 2019 ] >>")	
 
 #On verifie la présence des fichiers necessaires à la restauration
 	print("\n Verification de la présence des fichiers en cours..\n")
-	if os.path.isfile(localisation+'/'+jour+'/sauv.sql') and os.path.isdir(localisation+'/'+jour+'/html') and os.path.isdir(localisation+'/'+jour+'/crontab'):
+	if os.path.isfile(localisation+'/'+jour+'/sauv.sql') and os.path.isdir(localisation+'/'+jour+'/html') and os.path.isfile(localisation+'/'+jour+'/crontab'):
 		print("Fichiers présents :) \n")
 #Si ils sont présent on peut débuter la restauration
-		print("Debut de la restauration..\n")
+		print("Debut de la restauration...\n")
 		os.chdir(localisation+'/'+jour)
 		os.system('sudo mysql -u root   wordpress < sauv.sql')
 		os.system('sudo crontab crontab ')
 		os.system('sudo cp -r html/* /var/www/html/')
 		os.system('sudo service apache2 restart ')
 #manque création bdb
-		print("Restauration terminée :) \n Retour au menu principal")
+		print("Restauration terminée! \n Retour au menu principal")
 		input(" >>")
 		menu()
 
@@ -209,7 +208,7 @@ def restauration() :
 			print(" \n A quel date souhaitez-vous restaurer le site? ")
 			date2 = input("[exemple: 2019-12-16 pour 16 decembre 2019 ] >>")	
 
-			print("\n--------------------------------------------------------------------")
+	print("\n--------------------------------------------------------------------")
 			print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",repertoire,"\n Ip du serveur distant:",ip,"\n Date de restauration:",date2)
 			print("--------------------------------------------------------------------")
 #On demande confirmations des informations
@@ -217,18 +216,20 @@ def restauration() :
 			choice = input(" >>")
 			if choice=="y":
 #Si oui début du telechargement et de la restauration
-				print(" \n Recuperation du fichier en cours..")
+				print(" \n Recuperation du repertoire en cours..")
 				os.system('scp -r administrateur@'+ip+' '+repertoire+'/'+date2+' ' +localisation)
 				print("\n Recuperation terminée. Debut de la restauration..")
+				print("\n Verification de la présence des fichiers en cours..\n")
 #On verifie que tout les fichiers necessaires sont présent
-				if os.path.isfile(localisation+'/'+jour+'/sauv.sql') and os.path.isdir(localisation+'/'+jour+'/html') and os.path.isdir(localisation+'/'+jour+'/crontab'):
-
+				if os.path.isfile(localisation+'/'+jour+'/sauv.sql') and os.path.isdir(localisation+'/'+jour+'/html') and os.path.isfile(localisation+'/'+jour+'/crontab'):
+#Si c'est le cas on commence la restauration
+					print("Fichiers présents :) \n Debut de la restauration...\n")
 					os.chdir(localisation+'/'+date2)
 					os.system('sudo mysql -u root   wordpress < sauv.sql')
 					os.system('sudo crontab crontab ')
 					os.system('sudo cp -r html/* /var/www/html/')
 					os.system('sudo service apache2 restart ')
-					print("\n Restauration terminée :) \n Retour au menu principal")
+					print("\n Restauration terminée! \n Retour au menu principal")
 					input(" >>")
 					menu()
 #Sinon on avertit l'utilisateur
