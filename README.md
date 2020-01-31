@@ -6,7 +6,7 @@
 
 1. PRE-REQUIS
 
-Dans le cas d'une restauration des actions manuelles sont necessaires:
+Dans le cas d'une restauration des actions manuelles sont nécessaires:
 	
 	-Télécharger mysql-server
 	-Créer l'utilisateur Wordpress
