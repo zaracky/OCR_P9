@@ -19,6 +19,8 @@ def menu():
 	print("Bienvenue à travers mon script de sauvegarde \n Voici les differentes options:")
 	print(" 1.Créer une sauvegarde du site Wordpress \n 2.Restaurer le site Wordpress à partir d'un fichier \n 3.Sauvegarde automatique \n 4.Manuel d'instruction \n 5.Quitter")
 	print("-------------------------------------------------------------------")
+	print("\n \033[31m/_\ Attention dans le cas d'une restauration des pré-requis sont necessaires! Cf README/Manuel d'instruction \033[0m ")
+	
 
 	print(" \n Votre choix:")
 #Si un argument est entrée on le selectionne en tant que choix (par exemple pour automatiser l'exécution)
@@ -75,7 +77,7 @@ def sauvegarde():
 #On crée un repertoire avec la date de la sauvegarde
  			os.makedirs(str(heure2))
 		os.chdir(str(heure2))
-#On sauvegarde la base de données et le fichier wordpress et le crontab
+#On sauvegarde la base de données, le fichier wordpress et le crontab
 		os.system('sudo mysqldump  -u root   wordpress > sauv.sql')
 		os.system('sudo cp -r /var/www/html '+localisation+'/'+str(heure2))
 		os.system('crontab -u administrateur -l > crontab')
@@ -91,7 +93,9 @@ def sauvegarde():
 		print("\n Copie réalisée")
 #Verification des fichiers supérieur à 7jours
 		print("\n Analyse de la presence de sauvegarde superieur à 7jours..")
+		os.system('sudo find '+localisation+' -type d -mtime +7 -exec rm -fr {} \;')
 		os.system('ssh administrateur@'+ip+' find '+access+' -type d -mtime +7 -exec rm -fr {} \;')
+		print("\n Analyse terminée..")
 
 		print("\n Retour vers le menu principal")
 		input(" >>")
@@ -124,10 +128,6 @@ def sauvegarde_auto():
 	heure= datetime.datetime.now()	
 	heure2= heure.date()
 #A la difference de la premier fonction aucune question ne vas etre posé
-	localisation="/home/administrateur/Bureau/sauvegarde"
-	ip="192.168.1.1"
-
-	#os.system('ssh administrateur@'+ip+' find /home/administrateur/test -type d -mtime +1 -exec echo {} \;')
 	print("Début de la sauvegarde...")
 	if not os.path.exists(localisation):
  		os.makedirs(localisation)
@@ -144,13 +144,12 @@ def sauvegarde_auto():
 	print("Fichiers sauvegardé à l'emplacement suivant:",localisation)
 	print("\n Copie vers le serveur distant en cours..")
 	os.chdir(localisation)
-	os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':/home/administrateur')
+	os.system('scp -r '+str(heure2)+'/ administrateur@'+ip+':'+access)
 	print("\n Copie réalisé")
-	print("\n Analyse de la presence de sauvegarde superieur à 30jours..")
-	os.system('ssh administrateur@'+ip+' find /home/administrateur/test -type d -mtime +20 -exec rm -fr {} \;')
-	os.system('find /home/administrateur/Bureau/sauvegarde -type d -mtime +20 -exec rm -fr {} \;')
-#ssh login@Host 'find /home/exploit/ -size 0 -exec rm -i  {} \;'
-#find -type d -mtime +10
+	print("\n Analyse de la presence de sauvegarde superieur à 7jours..")
+	os.system('sudo find '+localisation+' -type d -mtime +7 -exec rm -fr {} \;')
+	os.system('ssh administrateur@'+ip+' find '+access+' -type d -mtime +7 -exec rm -fr {} \;')
+	print("\n Analyse terminée..")
 
 	print("\n Retour vers le menu principal")
 	return
@@ -166,7 +165,7 @@ def restauration() :
 	heure2= heure.date()
 #On verifie/télécharge les pré-requis au fonctionnement du site
 	print("\n Téléchargement des pré-requis...")
-	os.system('sudo apt-get install mysql-server mysql-client')
+	os.system('sudo apt-get install mysql-server')
 	os.system('sudo apt-get install apache2 php7.2 php7.2-mysql libapache2-mod-php7.2')
 	os.system('sudo service apache2 start ')
 #On avertit l'utilisateur du résultat
@@ -189,7 +188,6 @@ def restauration() :
 		os.system('sudo crontab crontab ')
 		os.system('sudo cp -r html/* /var/www/html/')
 		os.system('sudo service apache2 restart ')
-#manque création bdb
 		print("Restauration terminée! \n Retour au menu principal")
 		input(" >>")
 		menu()
@@ -208,7 +206,7 @@ def restauration() :
 			print(" \n A quel date souhaitez-vous restaurer le site? ")
 			date2 = input("[exemple: 2019-12-16 pour 16 decembre 2019 ] >>")	
 
-	print("\n--------------------------------------------------------------------")
+			print("\n--------------------------------------------------------------------")
 			print("Recapitulatif des informations: \n Repertoire de sauvegarde: ",repertoire,"\n Ip du serveur distant:",ip,"\n Date de restauration:",date2)
 			print("--------------------------------------------------------------------")
 #On demande confirmations des informations
@@ -238,7 +236,6 @@ def restauration() :
 					input(" >>")
 					menu()
 
-#sudo scp -r administrateur@192.168.1.1:/home/administrateur/2019-12-07 /home/administrateur/Bureau/sauvegarde/
 			else  :	
 				os.system('clear')
 				restauration()
@@ -254,14 +251,12 @@ def restauration() :
 	
 ########################################################################################
 
+#Cette fonction est dédié à l'alerte par mail dans le cas d'une execution auto
 def envoimail():
 
 	print("\nPréparation du mail pour l'envoie..")
-#On l'integre ensuite à une variable
-	mail= input(" >>")
-
 	msg = MIMEMultipart()
-#On definit ici le corps du mail. Ce dernier sera a adapter en fonction du type de destinataire (technique ou non)
+#On definit ici le corps du mail. 
 	msg['From'] = expediteur
 	msg['To'] = mail
 	msg['Subject'] = '/!\ Alerte sauvegarde impossible' 
@@ -291,15 +286,7 @@ def envoimail():
 
 
 def readme():
-	mydb = mysql.connector.connect(
-  	host="localhost",
-  	user="root",
-  	passwd=""
-)
 
-	mycursor = mydb.cursor()
-
-	mycursor.execute("CREATE DATABASE hola")
 	print("""  -------------------------------------------------------------------------
 |									  |
 |			MANUEL D'INSTRUCTION				  |
@@ -307,6 +294,12 @@ def readme():
  --------------------------------------------------------------------------
 
 1. PRE-REQUIS
+
+Dans le cas d'une restauration des actions manuelles sont nécessaires:
+
+-Télécharger mysql-server
+-Créer l'utilisateur Wordpress
+-Créer une base nommée wordpress
 
 /!\ Ce Script est à exécuter dans le même répertoire que le fichier variable.py dans le cas d'une exécution automatique!
 
