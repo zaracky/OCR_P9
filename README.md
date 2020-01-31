@@ -6,13 +6,18 @@
 
 1. PRE-REQUIS
 
+Dans le cas d'une restauration des actions manuelles sont necessaires:
+	-Télécharger mysql-server
+	-Créer l'utilisateur Wordpress
+	-Créer une base nommée wordpress
+
 /!\ Ce Script est à exécuter dans le même répertoire que le fichier variable.py dans le cas d'une exécution automatique!
 
 Le fichier variable.py est fourni au meme endroit que le script de sauvegarde. Il permet de configurer les variables les plus utilisées et les identifiants gmail
 
 Ce manuel d'instruction est également disponible au sein du script avec le choix "4" dans le menu.
 
-Une connexion internet est requise pour l'envoi par mail et le téléchargement des pré-requis
+Une connexion internet est requise pour l'envoi par mail et le téléchargement des prérequis
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -24,7 +29,7 @@ Pour ce faire, il va réaliser une copie du répertoire html, de la base de donn
 
 Ces fichiers vont être copiés dans un repertoire se nommant avec la date du jour de sauvegarde. L'emplacement de la sauvegarde est à definir via le script ou dans variable.py
 
-Une fois créee, une copie sera réalisée sur un serveur distant. A nouveau le choix du serveur est à definir
+Une fois crée, une copie sera réalisée sur un serveur distant. A nouveau le choix du serveur est à definir
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
